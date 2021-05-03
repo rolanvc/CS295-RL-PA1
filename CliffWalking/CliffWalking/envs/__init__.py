@@ -1,1 +1,1 @@
-from gym_foo.envs.foo_env import FooEnv
+from CliffWalking.envs.cliffwalking_env import CliffWalkingEnv
