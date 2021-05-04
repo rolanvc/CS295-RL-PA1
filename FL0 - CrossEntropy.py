@@ -45,12 +45,12 @@ def iterate_batches(env, net, batch_size):
     episode_reward = 0.0  # initialize
     episode_steps = []  # list to contain the steps of an episode
     obs = env.reset()  # first observation
-    sm = nn.Softmax(dim=1)  # we'll need to softmax the output of the network to compute probabilities.
+    sm = nn.Softmax()  # we'll need to softmax the output of the network to compute probabilities.
     while True:     # we'll keep going until an the calling function has achieved performance,
         # and we don't need to generate a batch anymore
         obs_v = torch.FloatTensor([obs])  # convert observation to vector
         act_probs_v = sm(net(obs_v))        # run observation vector through softmax to get probabilities.
-        act_probs = act_probs_v.data.numpy()[0]  # these are the action probabilities
+        act_probs = act_probs_v.detach().numpy()  # these are the action probabilities
         action = np.random.choice(len(act_probs), p=act_probs)  # sample an action based on probs
         next_obs, reward, is_done, _ = env.step(action)  # step
         episode_reward += reward   # accumulate reward
@@ -90,8 +90,9 @@ def filter_batch(batch, percentile):
         train_act.extend(map(lambda step: step.action, steps))
 
     train_obs_v = torch.FloatTensor(train_obs)  # convert to torch tensor
+    train_obs_v_new =  train_obs_v.reshape(-1, 1)
     train_act_v = torch.LongTensor(train_act)   # convert to torch tensor
-    return train_obs_v, train_act_v, reward_bound, reward_mean
+    return train_obs_v_new, train_act_v, reward_bound, reward_mean
 
 
 if __name__ == "__main__":
@@ -124,5 +125,4 @@ if __name__ == "__main__":
         if reward_m > 199:
             print("Solved!")
             break
-    writer.close()
 
